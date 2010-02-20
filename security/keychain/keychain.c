@@ -22,10 +22,10 @@ FOREACH_OPTIONS(sym_prefix)
     if (!NIL_P(v)) { \
 	SafeStringValue(v); \
 	v##_ptr = RSTRING_PTR(v); \
-	v##_len = RSTRING_LEN(v); \
+	v##_len = rb_long2int(RSTRING_LEN(v));	\
     }
 #define CheckStringArg(v) \
-    if (!NIL_P(v) && (v##_ptr != RSTRING_PTR(v) || v##_len != RSTRING_LEN(v))) { \
+    if (!NIL_P(v) && (v##_ptr != RSTRING_PTR(v) || (long)v##_len != RSTRING_LEN(v))) { \
 	rb_raise(rb_eArgError, #v" has been changed"); \
     }
 #define GetSig(v) \
