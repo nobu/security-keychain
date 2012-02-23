@@ -19,6 +19,8 @@
 FOREACH_OPTIONS(sym_prefix)
 
 #define GetStringArg(v) \
+    const char *v##_ptr = 0; \
+    UInt32 v##_len = 0; \
     if (!NIL_P(v)) { \
 	SafeStringValue(v); \
 	v##_ptr = RSTRING_PTR(v); \
@@ -29,11 +31,12 @@ FOREACH_OPTIONS(sym_prefix)
 	rb_raise(rb_eArgError, #v" has been changed"); \
     }
 #define GetSig(v) \
+    UInt32 v##_str = 0; \
     if (!NIL_P(v)) { \
 	SafeStringValue(v); \
 	if (RSTRING_LEN(v) != 4) \
 	    rb_raise(rb_eArgError, #v" must be exactly 4 characters long"); \
-	ptr = RSTRING_PTR(v); \
+	const char *ptr = RSTRING_PTR(v); \
 	v##_str = (unsigned char)ptr[0] << 24 | \
 	    (unsigned char)ptr[1] << 16 | \
 	    (unsigned char)ptr[2] << 8 | \
@@ -54,8 +57,6 @@ raise_secerror(OSStatus err)
 static VALUE
 keychain_find_generic_password(CFTypeRef keychain, VALUE service, VALUE account)
 {
-    const char *service_ptr = 0, *account_ptr = 0;
-    UInt32 service_len = 0, account_len = 0;
     void *passwddata;
     UInt32 passwdlen;
     VALUE passwd;
@@ -104,10 +105,6 @@ keychain_find_internet_password(CFTypeRef keychain, VALUE server, VALUE domain,
 				VALUE protocol, VALUE auth)
 {
     int portno = 0;
-    const char *server_ptr = 0, *domain_ptr = 0, *account_ptr = 0, *path_ptr = 0;
-    UInt32 server_len = 0, domain_len = 0, account_len = 0, path_len = 0;
-    UInt32 protocol_str = 0, auth_str = 0;
-    const char *ptr;
     void *passwddata;
     UInt32 passwdlen;
     VALUE passwd;
