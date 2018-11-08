@@ -44,6 +44,8 @@ FOREACH_OPTIONS(sym_prefix)
     }
 #define GetArg(v) v = rb_hash_lookup2(opt, sym_##v, Qnil)
 
+NORETURN(static void raise_secerror(OSStatus err));
+
 static void
 raise_secerror(OSStatus err)
 {
