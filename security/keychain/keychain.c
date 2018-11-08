@@ -4,7 +4,11 @@
 #include <ruby.h>
 #include <ruby/encoding.h>
 
+#define id_prefix(x) static ID id_##x;
 #define sym_prefix(x) static VALUE sym_##x;
+#ifndef numberof
+#define numberof(array) ((int)(sizeof(array) / sizeof((array)[0])))
+#endif
 
 #define FOREACH_OPTIONS(x) \
     x(service) \
@@ -16,7 +20,11 @@
     x(protocol) \
     x(auth)
 
+#ifdef HAVE_RB_SCAN_ARGS_OPTIONAL_HASH
+FOREACH_OPTIONS(id_prefix)
+#else
 FOREACH_OPTIONS(sym_prefix)
+#endif
 
 #define GetStringArg(v) \
     const char *v##_ptr = 0; \
@@ -82,8 +90,23 @@ keychain_find_generic_password(CFTypeRef keychain, VALUE service, VALUE account)
 static VALUE
 rb_keychain_find_generic_password(int argc, VALUE *argv, VALUE self)
 {
-    VALUE service = Qnil, account = Qnil;
     VALUE opt = Qnil;
+#ifdef HAVE_RB_SCAN_ARGS_OPTIONAL_HASH
+    VALUE args[2];
+    rb_scan_args(argc, argv, "02:", args+0, args+1, &opt);
+    if (!NIL_P(opt)) {
+        ID kwds[numberof(args)];
+        int i = 0;
+        kwds[i++] = id_service;
+        kwds[i++] = id_account;
+        rb_get_kwargs(opt, kwds, 0, i, args);
+        for (i = 0; i < numberof(args); ++i) {
+            if (args[i] == Qundef) args[i] = Qnil;
+        }
+    }
+    return keychain_find_generic_password(NULL, args[0], args[1]);
+#else
+    VALUE service = Qnil, account = Qnil;
     if (argc > 0 && TYPE(opt = argv[argc - 1]) == T_HASH) {
 	--argc;
     }
@@ -99,6 +122,7 @@ rb_keychain_find_generic_password(int argc, VALUE *argv, VALUE self)
 	}
     }
     return keychain_find_generic_password(NULL, service, account);
+#endif
 }
 
 static VALUE
@@ -139,9 +163,31 @@ keychain_find_internet_password(CFTypeRef keychain, VALUE server, VALUE domain,
 static VALUE
 rb_keychain_find_internet_password(int argc, VALUE *argv, VALUE self)
 {
+    VALUE opt = Qnil;
+
+#ifdef HAVE_RB_SCAN_ARGS_OPTIONAL_HASH
+    VALUE args[7];
+    rb_scan_args(argc, argv, "07:", args+0, args+1, args+2, args+3,
+                 args+4, args+5, args+6, &opt);
+    if (!NIL_P(opt)) {
+        ID kwds[numberof(args)];
+        int i = 0;
+        kwds[i++] = id_server;
+        kwds[i++] = id_domain;
+        kwds[i++] = id_account;
+        kwds[i++] = id_path;
+        kwds[i++] = id_port;
+        kwds[i++] = id_protocol;
+        kwds[i++] = id_auth;
+        rb_get_kwargs(opt, kwds, 0, i, args);
+        for (i = 0; i < numberof(args); ++i) {
+            if (args[i] == Qundef) args[i] = Qnil;
+        }
+    }
+    return keychain_find_internet_password(NULL, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+#else
     VALUE server = Qnil, domain = Qnil, account = Qnil, path = Qnil;
     VALUE port = Qnil, protocol = Qnil, auth = Qnil;
-    VALUE opt = Qnil;
     if (argc > 0 && TYPE(opt = argv[argc - 1]) == T_HASH) {
 	--argc;
     }
@@ -162,9 +208,14 @@ rb_keychain_find_internet_password(int argc, VALUE *argv, VALUE self)
 	}
     }
     return keychain_find_internet_password(NULL, server, domain, account, path, port, protocol, auth);
+#endif
 }
 
+#ifdef HAVE_RB_SCAN_ARGS_OPTIONAL_HASH
+#define make_sym(x) id_##x = rb_intern_const(#x);
+#else
 #define make_sym(x) sym_##x = ID2SYM(rb_intern(#x));
+#endif
 
 void
 Init_keychain(void)
