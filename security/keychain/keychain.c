@@ -87,6 +87,17 @@ keychain_find_generic_password(CFTypeRef keychain, VALUE service, VALUE account)
     return passwd;
 }
 
+/*
+ * call-seq:
+ *
+ *   Security::Keychain.find_generic_password(service = nil, account = nil)       -> string
+ *   Security::Keychain.find_generic_password(service: service, account: account) -> string
+ *   Security::Keychain.generic_password(service = nil, account = nil)            -> string
+ *   Security::Keychain.generic_password(service: service, account: account)      -> string
+ *
+ * Finds generic password by +service+ and +account+.
+ */
+
 static VALUE
 rb_keychain_find_generic_password(int argc, VALUE *argv, VALUE self)
 {
@@ -159,6 +170,22 @@ keychain_find_internet_password(CFTypeRef keychain, VALUE server, VALUE domain,
     SecKeychainItemFreeContent(NULL, passwddata);
     return passwd;
 }
+
+/*
+ * call-seq:
+ *
+ *   Security::Keychain.find_internet_password(server = nil, domain = nil, account = nil,
+ *                                             path = nil, port = nil, protocol = nil, auth = nil) -> string
+ *   Security::Keychain.find_internet_password(server: server, domain: domain, account: account,
+ *                                             path: path, port: port, protocol: protocol, auth: auth) -> string
+ *   Security::Keychain.internet_password(server = nil, domain = nil, account = nil,
+ *                                        path = nil, port = nil, protocol = nil, auth = nil) -> string
+ *   Security::Keychain.internet_password(server: server, domain: domain, account: account,
+ *                                        path: path, port: port, protocol: protocol, auth: auth) -> string
+ *
+ * Finds internet password by +server+, +domain+, +account+, +path+,
+ * +port+, +protocol+, and +auth+.
+ */
 
 static VALUE
 rb_keychain_find_internet_password(int argc, VALUE *argv, VALUE self)
